@@ -8,10 +8,12 @@ module.exports = {
   development: {
     client: 'pg',
     connection: {
-      host : '127.0.0.1',
+      // host : '127.0.0.1',
+      host : "postgres",
       user : 'postgres',
-      password : 'Madhu@1',
-      database : 'figma_db'
+      password : 'Madhu@01',
+      database : 'figma_db',
+      port: 5432
     },
     migrations: {
       directory: './migrations'
