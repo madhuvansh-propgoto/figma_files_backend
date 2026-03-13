@@ -15,7 +15,6 @@ exports.upsertUser = async (req, res) => {
       password
     } = req.body;
 
-    // CREATE validation
     if (!id) {
       if (!name || !email || !mobile_no || !profile_url || !password) {
         return res.status(400).json({
@@ -28,15 +27,12 @@ exports.upsertUser = async (req, res) => {
 
     const existingUser = await db('users').where({ id }).first();
 
-    // hash password if provided
     let hashedPassword = null;
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
     if (existingUser) {
-
-      // UPDATE
       const updatePayload = {
         name: name ?? existingUser.name,
         email: email ?? existingUser.email,
@@ -59,8 +55,6 @@ exports.upsertUser = async (req, res) => {
       });
 
     } else {
-
-      // CREATE
       await db('users').insert({
         id,
         name,

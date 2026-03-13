@@ -1,24 +1,18 @@
-// Update with your config settings.
+const dotenv = require('dotenv');
 
-/**
- * @type { Object.<string, import("knex").Knex.Config> }
- */
+dotenv.config();
+
 module.exports = {
- 
   development: {
-    client: 'pg',
+    client: "pg",
     connection: {
-      // host : '127.0.0.1',
-      host : "postgres",
-      user : 'postgres',
-      password : 'Madhu@01',
-      database : 'figma_db',
-      port: 5432
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
     },
     migrations: {
-      directory: './migrations'
-    }
-  }
- 
+      directory: "./migrations",
+    },
+  },
 };
- 
