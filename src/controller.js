@@ -175,6 +175,8 @@ exports.upsertFolder = async (req, res) => {
         id = uuidv4();
       }
 
+      console.log("11111ooooooo999")
+
       await db("folders").insert({
         id,
         name,
@@ -182,7 +184,7 @@ exports.upsertFolder = async (req, res) => {
         owner_id,
         created_at: new Date(),
         updated_at: new Date(),
-        isActive: isActive ?? true,
+        is_active: isActive ?? true,
         created_by,
         updated_by: updated_by ?? created_by
       });
@@ -200,7 +202,7 @@ exports.upsertFolder = async (req, res) => {
         name: name ?? existingFolder.name,
         color: color ?? existingFolder.color,
         owner_id: owner_id ?? existingFolder.owner_id,
-        isActive: isActive ?? existingFolder.isActive,
+        is_active: isActive ?? existingFolder.is_active,
         updated_by: updated_by ?? existingFolder.updated_by,
         updated_at: new Date()
       });
@@ -216,6 +218,21 @@ exports.upsertFolder = async (req, res) => {
     return res.status(500).json({
       message: "Internal Server Error",
       error
+    });
+  }
+};
+
+exports.getFolders = async (req, res) => {
+  try {
+    const folders = await db("folders").select("*");
+
+    return res.status(200).json(folders);
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal Server Error"
     });
   }
 };
