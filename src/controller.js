@@ -175,8 +175,6 @@ exports.upsertFolder = async (req, res) => {
         id = uuidv4();
       }
 
-      console.log("11111ooooooo999")
-
       await db("folders").insert({
         id,
         name,
@@ -234,5 +232,55 @@ exports.getFolders = async (req, res) => {
     return res.status(500).json({
       message: "Internal Server Error"
     });
+  }
+};
+
+
+
+exports.uploadFile = async (req, res) => {
+  try {
+    const {
+      name,
+      size,
+      type,
+      category,
+      folder_id,
+      owner_id
+    } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const fileData = {
+      name,
+      size,
+      type,
+      category,
+      folder_id,
+      owner_id,
+      path: req.file.path
+    };
+
+    await db("files").insert(fileData);
+
+    res.json({
+      message: "File uploaded successfully",
+      file: fileData
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getFilesByFolder = async (req, res) => {
+  try {
+    const files = await db("files")
+      .where({ folder_id: req.params.folderId });
+
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
