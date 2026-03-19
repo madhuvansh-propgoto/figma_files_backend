@@ -9,9 +9,7 @@ router.post("/upsert-folder", controller.upsertFolder);
 router.post("/login",controller.loginUser);
 router.get("/folders", controller.getFolders);
 
-
-// console.log("UPLOAD:-----", upload);
-
+// router.post("/files",controller.uploadFile);
 router.post("/files", upload.single("file"), controller.uploadFile);
 router.get("/files/:folderId", controller.getFilesByFolder);
 

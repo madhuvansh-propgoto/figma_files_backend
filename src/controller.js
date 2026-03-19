@@ -222,44 +222,79 @@ exports.upsertFolder = async (req, res) => {
 
 exports.getFolders = async (req, res) => {
   try {
-    const folders = await db("folders").select("*");
+    const folders = await db("folders")
+      .leftJoin("files", "folders.id", "files.folder_id")
+      .select("folders.id", "folders.name", "folders.color")
+      .count("files.id as file_count")
+      .groupBy("folders.id");
 
-    return res.status(200).json(folders);
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      message: "Internal Server Error"
-    });
+    res.json(folders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch folders" });
   }
 };
 
 
+const getCategory = (type) => {
+  if (!type) return "docs";
+
+  type = type.toLowerCase();
+
+  if (["jpg", "jpeg", "png", "gif", "webp"].includes(type)) return "media";
+  if (["mp3", "wav", "aac"].includes(type)) return "music";
+  if (["pdf", "doc", "docx", "txt"].includes(type)) return "docs";
+
+  return "docs"; // fallback MUST be valid
+};
 
 exports.uploadFile = async (req, res) => {
   try {
-    const {
-      name,
-      size,
-      type,
-      category,
-      folder_id,
-      owner_id
-    } = req.body;
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const fileData = {
+    const {
       name,
       size,
       type,
-      category,
       folder_id,
-      owner_id,
-      path: req.file.path
+      owner_id
+    } = req.body;
+
+    // const fileData = {
+    //   name:req.file.originalname,
+    //   size,
+    //   type,
+    //   folder_id,
+    //   owner_id: owner_id || null,
+    //   category: getCategory(type), 
+    //   path: req.file.filename       
+    // };
+
+    // const fileData = {
+    //   name: req.file.originalname,
+    //   size: req.file.size,
+    //   type: req.file.mimetype,
+    //   folder_id: req.body.folder_id,
+    //   owner_id: req.body.owner_id,
+    //   path: req.file.filename,
+    //   category: getCategory(type) 
+    // };    
+
+    const fileExt = req.file.originalname.split(".").pop();
+
+    const fileData = {
+      name: req.file.originalname,
+      size: req.file.size,
+      type: req.file.mimetype,
+      folder_id: req.body.folder_id,
+      owner_id: req.body.owner_id,
+      path: req.file.filename,
+      category: getCategory(fileExt)
     };
 
     await db("files").insert(fileData);
@@ -270,6 +305,7 @@ exports.uploadFile = async (req, res) => {
     });
 
   } catch (err) {
+    console.error("UPLOAD ERROR:", err); 
     res.status(500).json({ error: err.message });
   }
 };
@@ -279,7 +315,13 @@ exports.getFilesByFolder = async (req, res) => {
     const files = await db("files")
       .where({ folder_id: req.params.folderId });
 
-    res.json(files);
+    // res.json(files);
+    res.json(
+      files.map(file => ({
+        ...file,
+        file_url: `/uploads/${file.path}` 
+      }))
+    );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
